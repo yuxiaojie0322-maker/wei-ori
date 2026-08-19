@@ -1,0 +1,78 @@
+name: Orihost 每日续期
+
+on:
+  schedule:
+    # 每天 UTC 2:00（北京时间 10:00）运行
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  renew:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装系统依赖（Chromium + sing-box）
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq chromium-browser wget unzip
+          # 安装 sing-box（固定版本避免 API 限流）
+          wget -q "https://github.com/SagerNet/sing-box/releases/download/v1.10.0/sing-box_1.10.0_linux_amd64.tar.gz" -O /tmp/sing-box.tar.gz
+          tar -xzf /tmp/sing-box.tar.gz -C /usr/local/bin sing-box
+          echo "sing-box 版本: $(sing-box version | head -1)"
+
+      - name: 创建 sing-box 配置
+        run: |
+          mkdir -p /etc/sing-box
+          cat > /etc/sing-box/config.json << 'EOF'
+          {
+            "log": {"level": "info", "output": "/tmp/sing-box.log"},
+            "inbounds": [{"type": "socks", "listen": "127.0.0.1", "listen_port": 10822}],
+            "outbounds": [
+              {
+                "type": "vless",
+                "tag": "proxy",
+                "server": "always.blibli.kdns.fr",
+                "server_port": 443,
+                "uuid": "ea60a78f-8e0e-4959-a46b-2dcb58644ba7",
+                "tls": {"enabled": true, "server_name": "always.blibli.kdns.fr", "insecure": true, "utls": {"enabled": true, "fingerprint": "chrome"}},
+                "transport": {"type": "ws", "path": "/ea60a78f", "headers": {"Host": "always.blibli.kdns.fr"}}
+              },
+              {"type": "direct", "tag": "direct"}
+            ],
+            "route": {"final": "proxy"},
+            "dns": {"servers": [{"tag": "dns-server", "address": "tcp://8.8.8.8"}], "strategy": "ipv4_only"}
+          }
+          EOF
+
+      - name: 启动 sing-box
+        run: |
+          fuser -k 10822/tcp 2>/dev/null || true
+          sleep 1
+          nohup sing-box run -c /etc/sing-box/config.json > /tmp/sing-box.log 2>&1 &
+          sleep 2
+          curl -x socks5://127.0.0.1:10822 -s -o /dev/null -w "代理测试: %{http_code}\n" https://panel.orihost.com/auth/login
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装 Python 依赖
+        run: |
+          pip install -r requirements.txt
+          playwright install chromium
+
+      - name: 执行续期
+        env:
+          ORIHOST_EMAIL: ${{ secrets.ORIHOST_EMAIL }}
+          ORIHOST_PASSWORD: ${{ secrets.ORIHOST_PASSWORD }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          SOCKS_PORT: "10822"
+          HEADLESS: "true"
+          SCREENSHOT_DIR: "/tmp/orihost_screenshots"
+        run: |
+          python renew_orihost.py
