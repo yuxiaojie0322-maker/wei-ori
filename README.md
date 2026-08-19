@@ -32,6 +32,21 @@ git push -u origin main
 
 仓库 → Settings → Secrets and variables → Actions → New repository secret
 
+#### 方式一：多账号（推荐）
+
+添加一个 Secret `ORIHOST_ACCOUNTS`，值为 JSON 数组，每个账号一个对象：
+
+```json
+[
+  {"email":"账号1","password":"密码1","name":"别名1"},
+  {"email":"账号2","password":"密码2","name":"别名2"}
+]
+```
+
+脚本会自动遍历每个账号，逐一续期并各自推送 TG 通知。
+
+#### 方式二：单账号
+
 | Secret | 值 |
 |--------|-----|
 | `ORIHOST_EMAIL` | 你的 Orihost 邮箱/用户名 |

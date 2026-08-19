@@ -18,7 +18,6 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq chromium-browser wget unzip
-          # 安装 sing-box（固定版本避免 API 限流）
           wget -q "https://github.com/SagerNet/sing-box/releases/download/v1.10.0/sing-box_1.10.0_linux_amd64.tar.gz" -O /tmp/sing-box.tar.gz
           tar -xzf /tmp/sing-box.tar.gz -C /usr/local/bin sing-box
           echo "sing-box 版本: $(sing-box version | head -1)"
@@ -67,6 +66,7 @@ jobs:
 
       - name: 执行续期
         env:
+          ORIHOST_ACCOUNTS: ${{ secrets.ORIHOST_ACCOUNTS }}
           ORIHOST_EMAIL: ${{ secrets.ORIHOST_EMAIL }}
           ORIHOST_PASSWORD: ${{ secrets.ORIHOST_PASSWORD }}
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
