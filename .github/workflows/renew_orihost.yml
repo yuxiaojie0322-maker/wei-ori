@@ -14,10 +14,9 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
-      - name: 安装系统依赖（Chromium + sing-box）
+      - name: 安装系统依赖（sing-box）
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq chromium-browser wget unzip
           wget -q "https://github.com/SagerNet/sing-box/releases/download/v1.10.0/sing-box_1.10.0_linux_amd64.tar.gz" -O /tmp/sing-box.tar.gz
           tar -xzf /tmp/sing-box.tar.gz -C /usr/local/bin sing-box
           echo "sing-box 版本: $(sing-box version | head -1)"
