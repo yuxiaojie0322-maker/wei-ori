@@ -17,8 +17,8 @@ jobs:
       - name: 安装系统依赖（sing-box）
         run: |
           sudo apt-get update -qq
-          wget -q "https://github.com/SagerNet/sing-box/releases/download/v1.14.0/sing-box_1.14.0_linux_amd64.tar.gz" -O /tmp/sing-box.tar.gz
-          tar -xzf /tmp/sing-box.tar.gz -C /usr/local/bin
+          wget -q "https://github.com/SagerNet/sing-box/releases/download/v1.13.19/sing-box-1.13.19-linux-amd64.tar.gz" -O /tmp/sing-box.tar.gz
+          tar -xzf /tmp/sing-box.tar.gz -C /usr/local/bin --strip-components=1 sing-box-1.13.19-linux-amd64/sing-box
           echo "sing-box 版本: $(sing-box version | head -1)"
 
       - name: 创建 sing-box 配置
