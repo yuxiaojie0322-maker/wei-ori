@@ -1,6 +1,6 @@
 # 🔄 Orihost 免费 VPS 自动续期
 
-自动续期 Orihost 免费 VPS（每次 +17 天）。
+自动续期 Orihost 免费 VPS（每次 +7 天）。
 
 ## 功能
 
